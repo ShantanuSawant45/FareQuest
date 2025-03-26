@@ -33,16 +33,17 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       await Provider.of<AuthProvider>(context, listen: false)
-          .signIn(_emailController.text, _passwordController.text);
+          .signIn(_emailController.text, _passwordController.text, context);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
+        SnackBar(content: Text("Login failed: ${e.toString()}")),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

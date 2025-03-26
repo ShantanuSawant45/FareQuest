@@ -40,7 +40,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
     try {
       await Provider.of<AuthProvider>(context, listen: false)
-          .signUp(_emailController.text, _passwordController.text, _isDriver);
+          .signUp(_emailController.text, _passwordController.text, _isDriver as BuildContext);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
