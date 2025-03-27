@@ -8,7 +8,6 @@ import 'package:se_project/providers/ride_provider.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
 
@@ -52,7 +51,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Map View
           Consumer<LocationProvider>(
             builder: (context, locationProvider, _) {
               final currentLocation = locationProvider.currentLocation;
@@ -110,6 +108,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 child: Column(
                   children: [
                     GooglePlaceAutoCompleteTextField(
+                      textStyle: TextStyle(
+                          color: Colors.black, fontWeight: FontWeight.w400),
                       textEditingController: _pickupController,
                       googleAPIKey: _googleApiKey,
                       inputDecoration: InputDecoration(
@@ -122,21 +122,28 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
+                        filled: true,
+                        fillColor: Colors.white.withOpacity(0.9),
                       ),
                       debounceTime: 800,
                       countries: const ["in"],
                       isLatLngRequired: true,
+                      itemClick: (Prediction prediction) {
+                        _pickupController.text = prediction.description ?? '';
+                      },
+                      seperatedBuilder: Divider(
+                        height: 1,
+                        color: Colors.grey.shade300,
+                      ),
                       getPlaceDetailWithLatLng: (Prediction prediction) async {
                         final location = LatLng(
                             double.parse(prediction.lat ?? "0"),
                             double.parse(prediction.lng ?? "0"));
-
                         final locationProvider = Provider.of<LocationProvider>(
                             context,
                             listen: false);
                         locationProvider.setPickupLocation(location);
                         // await locationProvider.updatePolylines();
-
                         _mapController?.animateCamera(
                           CameraUpdate.newLatLngZoom(location, 15),
                         );
@@ -144,6 +151,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                     ),
                     const SizedBox(height: 12),
                     GooglePlaceAutoCompleteTextField(
+                      textStyle: TextStyle(
+                          color: Colors.black, fontWeight: FontWeight.w400),
                       textEditingController: _destinationController,
                       googleAPIKey: _googleApiKey,
                       inputDecoration: InputDecoration(
@@ -156,10 +165,20 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
+                        filled: true,
+                        fillColor: Colors.white.withOpacity(0.9),
                       ),
                       debounceTime: 800,
                       countries: const ["in"],
                       isLatLngRequired: true,
+                      itemClick: (Prediction prediction) {
+                        _destinationController.text =
+                            prediction.description ?? '';
+                      },
+                      seperatedBuilder: Divider(
+                        height: 1,
+                        color: Colors.grey.shade300,
+                      ),
                       getPlaceDetailWithLatLng: (Prediction prediction) async {
                         final location = LatLng(
                             double.parse(prediction.lat ?? "0"),

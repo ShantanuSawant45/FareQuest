@@ -14,7 +14,7 @@ class AuthProvider with ChangeNotifier {
   String? get userId => _userId;
   bool get isDriver => _isDriver;
 
-  Future<void> signUp(String email, String password, BuildContext context) async {
+  Future<void> signUp(String email, String password, bool isDriver, BuildContext context) async {
     try {
       final UserCredential userCredential =
       await _auth.createUserWithEmailAndPassword(email: email, password: password);
@@ -23,6 +23,7 @@ class AuthProvider with ChangeNotifier {
       if (user != null) {
         _isAuthenticated = true;
         _userId = user.uid; // Store actual user ID
+        _isDriver = isDriver; // Set driver status
         notifyListeners();
 
         Navigator.pushReplacement(
@@ -34,7 +35,6 @@ class AuthProvider with ChangeNotifier {
       throw Exception("Signup failed: ${e.toString()}");
     }
   }
-
   Future<void> signIn(String email, String password, BuildContext context) async {
     try {
       final UserCredential userCredential =

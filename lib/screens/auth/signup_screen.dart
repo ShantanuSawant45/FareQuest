@@ -35,12 +35,16 @@ class _SignupScreenState extends State<SignupScreen> {
 
   Future<void> _signup() async {
     if (!_formKey.currentState!.validate()) return;
-
     setState(() => _isLoading = true);
 
     try {
       await Provider.of<AuthProvider>(context, listen: false)
-          .signUp(_emailController.text, _passwordController.text, _isDriver as BuildContext);
+          .signUp(
+          _emailController.text,
+          _passwordController.text,
+          _isDriver,  // Pass the boolean value directly
+          context
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -315,8 +319,7 @@ class _SignupScreenState extends State<SignupScreen> {
                               height: 50,
                               child: ElevatedButton(
                                 onPressed: (){
-                                  Navigator.push(context, MaterialPageRoute(builder: (context)=>UserHomeScreen()));
-
+                                _signup();
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor:
