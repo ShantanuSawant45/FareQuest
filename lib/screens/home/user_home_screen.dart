@@ -7,6 +7,7 @@ import 'package:se_project/providers/location_provider.dart';
 import 'package:se_project/providers/ride_provider.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'dart:math' as math;
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
@@ -21,6 +22,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   final _pickupController = TextEditingController();
   final _destinationController = TextEditingController();
   static const _googleApiKey = 'AIzaSyAdpipaTyU946lJeZjrF-oTIyAtlvDkjoY';
+  bool _showFareDetails = false;
+  double _estimatedFare = 0.0;
+  String _estimatedTime = "";
+  String _estimatedDistance = "";
 
   @override
   void initState() {
@@ -44,6 +49,30 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
     // Apply custom map style here if needed
+  }
+
+  void _calculateFare(double distanceInKm) {
+    // Basic fare calculation: base fare + per km charge
+    const baseFare = 50.0; // Base fare in rupees
+    const perKmCharge = 12.0; // Per kilometer charge
+
+    _estimatedFare = baseFare + (distanceInKm * perKmCharge);
+
+    // Estimate time (rough calculation - 2 min per km + 5 min buffer)
+    final timeInMinutes = (distanceInKm * 2 + 5).round();
+    if (timeInMinutes < 60) {
+      _estimatedTime = "$timeInMinutes mins";
+    } else {
+      final hours = timeInMinutes ~/ 60;
+      final mins = timeInMinutes % 60;
+      _estimatedTime = "$hours hr ${mins > 0 ? '$mins mins' : ''}";
+    }
+
+    _estimatedDistance = "${distanceInKm.toStringAsFixed(1)} km";
+
+    setState(() {
+      _showFareDetails = true;
+    });
   }
 
   @override
@@ -198,6 +227,22 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                             ),
                           ),
                         );
+
+                        // Calculate fare if both pickup and destination are set
+                        if (locationProvider.pickupLocation != null &&
+                            locationProvider.destinationLocation != null) {
+                          // Calculate distance between the two points
+                          final double distanceInMeters =
+                              await _calculateDistance(
+                                  locationProvider.pickupLocation!,
+                                  locationProvider.destinationLocation!);
+
+                          // Convert to kilometers
+                          final distanceInKm = distanceInMeters / 1000;
+
+                          // Calculate fare
+                          _calculateFare(distanceInKm);
+                        }
                       },
                     ),
                   ],
@@ -206,23 +251,121 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             ).animate().fade().slideY(begin: -0.3),
           ),
 
+          // Fare Details Panel
+          if (_showFareDetails)
+            Positioned(
+              bottom: _showBidsPanel ? 300 : 96,
+              left: 16,
+              right: 16,
+              child: GlassmorphicContainer(
+                width: double.infinity,
+                height: 130,
+                borderRadius: 20,
+                blur: 20,
+                alignment: Alignment.center,
+                border: 2,
+                linearGradient: LinearGradient(
+                  colors: [
+                    Colors.white.withOpacity(0.1),
+                    Colors.white.withOpacity(0.05),
+                  ],
+                ),
+                borderGradient: LinearGradient(
+                  colors: [
+                    Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                    Theme.of(context).colorScheme.secondary.withOpacity(0.5),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Distance:',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          Text(
+                            _estimatedDistance,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Estimated Time:',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          Text(
+                            _estimatedTime,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Estimated Fare:',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          Text(
+                            '₹${_estimatedFare.toStringAsFixed(2)}',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ).animate().fade().slideY(begin: 0.3),
+            ),
+
           // Request Ride Button
           Positioned(
             bottom: _showBidsPanel ? 300 : 32,
             left: 16,
             right: 16,
             child: ElevatedButton(
-              onPressed: () {
-                setState(() => _showBidsPanel = true);
-                // TODO: Implement ride request
-                Provider.of<RideProvider>(context, listen: false).requestRide(
-                  "user_id",
-                  {
-                    "pickup": _pickupController.text,
-                    "destination": _destinationController.text,
-                  },
-                );
-              },
+              onPressed: _showFareDetails
+                  ? () {
+                      setState(() => _showBidsPanel = true);
+                      // TODO: Implement ride request
+                      Provider.of<RideProvider>(context, listen: false)
+                          .requestRide(
+                        "user_id",
+                        {
+                          "pickup": _pickupController.text,
+                          "destination": _destinationController.text,
+                          "fare": _estimatedFare,
+                          "distance": _estimatedDistance,
+                          "estimatedTime": _estimatedTime,
+                        },
+                      );
+                    }
+                  : null, // Disable if fare details aren't shown yet
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Colors.white,
@@ -230,9 +373,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
+                disabledBackgroundColor: Colors.grey.shade400,
               ),
               child: const Text(
-                'Request Ride',
+                'Book Ride',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ).animate().fade().slideY(begin: 0.3),
@@ -345,5 +489,26 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         ],
       ),
     );
+  }
+
+  Future<double> _calculateDistance(LatLng pickup, LatLng destination) async {
+    // Simple Haversine formula to calculate distance
+    const radius = 6371.0; // Earth's radius in kilometers
+
+    // Convert to radians
+    final lat1 = pickup.latitude * (math.pi / 180);
+    final lon1 = pickup.longitude * (math.pi / 180);
+    final lat2 = destination.latitude * (math.pi / 180);
+    final lon2 = destination.longitude * (math.pi / 180);
+
+    // Haversine formula
+    final dlon = lon2 - lon1;
+    final dlat = lat2 - lat1;
+    final a = math.pow(math.sin(dlat / 2), 2) +
+        math.cos(lat1) * math.cos(lat2) * math.pow(math.sin(dlon / 2), 2);
+    final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+
+    // Distance in meters
+    return radius * c * 1000;
   }
 }
