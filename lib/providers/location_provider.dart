@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'dart:async';
 
 class LocationProvider with ChangeNotifier {
   LatLng? _currentLocation;
@@ -11,12 +12,15 @@ class LocationProvider with ChangeNotifier {
   final Set<Marker> _markers = {};
   Set<Polyline> _polylines = {};
   List<LatLng> _polylineCoordinates = [];
+  StreamSubscription<Position>? _positionStream;
+  bool _isLocationTracking = false;
 
   LatLng? get currentLocation => _currentLocation;
   LatLng? get pickupLocation => _pickupLocation;
   LatLng? get destinationLocation => _destinationLocation;
   Set<Marker> get markers => _markers;
   Set<Polyline> get polylines => _polylines;
+  bool get isLocationTracking => _isLocationTracking;
 
   Future<void> getCurrentLocation() async {
     bool serviceEnabled;
@@ -43,6 +47,52 @@ class LocationProvider with ChangeNotifier {
     final position = await Geolocator.getCurrentPosition();
     _currentLocation = LatLng(position.latitude, position.longitude);
     notifyListeners();
+  }
+
+  // Start continuous location tracking
+  void startLocationUpdates() {
+    if (_isLocationTracking) return; // Already tracking
+
+    const locationSettings = LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 10, // Update if moved 10 meters
+      timeLimit: Duration(seconds: 5), // Or after 5 seconds
+    );
+
+    _positionStream =
+        Geolocator.getPositionStream(locationSettings: locationSettings)
+            .listen((Position position) {
+      _currentLocation = LatLng(position.latitude, position.longitude);
+
+      // Update the current location marker
+      _markers.removeWhere(
+          (marker) => marker.markerId == const MarkerId('current_location'));
+      _markers.add(
+        Marker(
+          markerId: const MarkerId('current_location'),
+          position: _currentLocation!,
+          icon:
+              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueViolet),
+          infoWindow: const InfoWindow(title: 'Your Location'),
+        ),
+      );
+
+      _isLocationTracking = true;
+      notifyListeners();
+    });
+  }
+
+  // Stop location tracking
+  void stopLocationUpdates() {
+    _positionStream?.cancel();
+    _isLocationTracking = false;
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    stopLocationUpdates();
+    super.dispose();
   }
 
   void setPickupLocation(LatLng location) {

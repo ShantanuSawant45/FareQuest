@@ -22,12 +22,29 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   final _bidAmountController = TextEditingController();
   List<RideRequest> _nearbyRideRequests = [];
   bool _isLoading = false;
+  bool _isDriverOnline = true;
+  DateTime? _lastRefreshTime;
 
   @override
   void initState() {
     super.initState();
-    _getCurrentLocation();
+    _initializeLocationTracking();
     _fetchNearbyRideRequests();
+
+    // Set up auto-refresh timer for every 30 seconds
+    Future.delayed(Duration.zero, () {
+      _setupAutoRefresh();
+    });
+  }
+
+  void _setupAutoRefresh() {
+    // Only set up timer if not already set
+    Future.delayed(const Duration(seconds: 30), () {
+      if (mounted && _isDriverOnline) {
+        _fetchNearbyRideRequests();
+        _setupAutoRefresh(); // Schedule next refresh
+      }
+    });
   }
 
   @override
@@ -37,9 +54,37 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
     super.dispose();
   }
 
+  Future<void> _initializeLocationTracking() async {
+    final locationProvider =
+        Provider.of<LocationProvider>(context, listen: false);
+
+    await locationProvider.getCurrentLocation();
+
+    locationProvider.startLocationUpdates();
+
+    if (_mapController != null && locationProvider.currentLocation != null) {
+      _mapController!.animateCamera(
+        CameraUpdate.newLatLngZoom(
+          locationProvider.currentLocation!,
+          17.0,
+        ),
+      );
+    }
+  }
+
   Future<void> _getCurrentLocation() async {
-    await Provider.of<LocationProvider>(context, listen: false)
-        .getCurrentLocation();
+    final locationProvider =
+        Provider.of<LocationProvider>(context, listen: false);
+    await locationProvider.getCurrentLocation();
+
+    if (_mapController != null && locationProvider.currentLocation != null) {
+      _mapController!.animateCamera(
+        CameraUpdate.newLatLngZoom(
+          locationProvider.currentLocation!,
+          17.0,
+        ),
+      );
+    }
   }
 
   Future<void> _fetchNearbyRideRequests() async {
@@ -48,15 +93,54 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
     });
 
     try {
+      print('Driver screen: Fetching nearby ride requests...');
       final rideProvider = Provider.of<RideProvider>(context, listen: false);
+
+      // Print current status
+      print('Driver online: $_isDriverOnline');
+
       final requests = await rideProvider.getNearbyRideRequests();
+
+      _lastRefreshTime = DateTime.now();
+      print('Driver screen: Received ${requests.length} ride requests');
+
+      // Debug log each request
+      for (var request in requests) {
+        print('Ride ID: ${request.id}');
+        print('  From: ${request.pickup}');
+        print('  To: ${request.destination}');
+        print('  Status: ${request.status}');
+      }
 
       setState(() {
         _nearbyRideRequests = requests;
         _isLoading = false;
       });
+
+      // Show a message if requests were found
+      if (requests.isNotEmpty && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Found ${requests.length} ride requests'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
     } catch (e) {
-      print('Error fetching nearby ride requests: $e');
+      print('Driver screen: Error fetching nearby ride requests: $e');
+      print('Driver screen: Stack trace: ${StackTrace.current}');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load ride requests: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+
       setState(() {
         _isLoading = false;
       });
@@ -65,7 +149,17 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
 
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
-    // Apply custom map style here if needed
+
+    final currentLocation =
+        Provider.of<LocationProvider>(context, listen: false).currentLocation;
+    if (currentLocation != null) {
+      controller.animateCamera(
+        CameraUpdate.newLatLngZoom(
+          currentLocation,
+          17.0,
+        ),
+      );
+    }
   }
 
   void _showBidForm(String rideId) {
@@ -179,9 +273,25 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                       ),
                     ),
                     Switch(
-                      value: true, // Online status
+                      value: _isDriverOnline,
                       onChanged: (value) {
-                        // Toggle online status
+                        setState(() {
+                          _isDriverOnline = value;
+                        });
+
+                        final locationProvider = Provider.of<LocationProvider>(
+                            context,
+                            listen: false);
+
+                        // If driver went online, start location tracking and refresh
+                        if (value) {
+                          locationProvider.startLocationUpdates();
+                          _getCurrentLocation();
+                          _fetchNearbyRideRequests();
+                        } else {
+                          // If driver went offline, stop location tracking
+                          locationProvider.stopLocationUpdates();
+                        }
                       },
                       activeColor: Theme.of(context).colorScheme.primary,
                     ),
@@ -195,17 +305,39 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
           Positioned(
             top: MediaQuery.of(context).padding.top + 132,
             right: 16,
-            child: FloatingActionButton(
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              heroTag: 'rideRequestsBtn',
-              onPressed: () {
-                setState(
-                    () => _showRideRequestsPanel = !_showRideRequestsPanel);
-              },
-              child: Icon(
-                _showRideRequestsPanel ? Icons.close : Icons.list,
-                color: Colors.white,
-              ),
+            child: Column(
+              children: [
+                FloatingActionButton(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  heroTag: 'rideRequestsBtn',
+                  onPressed: () {
+                    setState(
+                        () => _showRideRequestsPanel = !_showRideRequestsPanel);
+                  },
+                  child: Icon(
+                    _showRideRequestsPanel ? Icons.close : Icons.list,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                FloatingActionButton(
+                  backgroundColor: Theme.of(context).colorScheme.secondary,
+                  heroTag: 'refreshBtn',
+                  onPressed: () {
+                    _fetchNearbyRideRequests();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Refreshing nearby ride requests...'),
+                        duration: Duration(seconds: 1),
+                      ),
+                    );
+                  },
+                  child: const Icon(
+                    Icons.refresh,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
             ),
           ),
 
@@ -217,7 +349,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
               right: 0,
               child: GlassmorphicContainer(
                 width: double.infinity,
-                height: 280,
+                height: MediaQuery.of(context).size.height * 0.6,
                 borderRadius: 20,
                 blur: 20,
                 border: 2,
@@ -273,6 +405,25 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                                             .textTheme
                                             .bodyLarge,
                                       ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        _lastRefreshTime != null
+                                            ? 'Last refreshed: ${_lastRefreshTime!.hour.toString().padLeft(2, '0')}:${_lastRefreshTime!.minute.toString().padLeft(2, '0')}'
+                                            : '',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall,
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        'Only showing rides from the last 10 minutes',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(
+                                                fontStyle: FontStyle.italic),
+                                        textAlign: TextAlign.center,
+                                      ),
                                       const SizedBox(height: 24),
                                       ElevatedButton.icon(
                                         onPressed: _fetchNearbyRideRequests,
@@ -315,6 +466,8 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                                           '${ride.pickup} → ${ride.destination}',
                                           style: const TextStyle(
                                               fontWeight: FontWeight.bold),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                         subtitle: Column(
                                           crossAxisAlignment:
@@ -327,8 +480,13 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                                                     size: 16,
                                                     color: Colors.grey[400]),
                                                 const SizedBox(width: 4),
-                                                Text(
-                                                    'Distance: ${ride.distance}'),
+                                                Expanded(
+                                                  child: Text(
+                                                    'Distance: ${ride.distance}',
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                ),
                                               ],
                                             ),
                                             const SizedBox(height: 4),
@@ -338,8 +496,13 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                                                     size: 16,
                                                     color: Colors.grey[400]),
                                                 const SizedBox(width: 4),
-                                                Text(
-                                                    'Est. Time: ${ride.estimatedTime}'),
+                                                Expanded(
+                                                  child: Text(
+                                                    'Est. Time: ${ride.estimatedTime}',
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                ),
                                               ],
                                             ),
                                             const SizedBox(height: 4),
@@ -349,24 +512,34 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                                                     size: 16,
                                                     color: Colors.grey[400]),
                                                 const SizedBox(width: 4),
-                                                Text(
-                                                    'Est. Fare: ₹${ride.fare}'),
+                                                Expanded(
+                                                  child: Text(
+                                                    'Est. Fare: ₹${ride.fare}',
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                ),
                                               ],
                                             ),
                                           ],
                                         ),
-                                        trailing: ElevatedButton(
-                                          onPressed: () =>
-                                              _showBidForm(ride.id),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Theme.of(context)
-                                                .colorScheme
-                                                .secondary,
-                                            foregroundColor: Colors.white,
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16, vertical: 12),
+                                        trailing: SizedBox(
+                                          width: 80,
+                                          child: ElevatedButton(
+                                            onPressed: () =>
+                                                _showBidForm(ride.id),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Theme.of(context)
+                                                  .colorScheme
+                                                  .secondary,
+                                              foregroundColor: Colors.white,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 10),
+                                            ),
+                                            child: const Text('Place Bid'),
                                           ),
-                                          child: const Text('Place Bid'),
                                         ),
                                         onTap: () {
                                           // Show pickup and destination on map
@@ -397,7 +570,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
               right: 0,
               child: GlassmorphicContainer(
                 width: double.infinity,
-                height: 200,
+                height: 240,
                 borderRadius: 20,
                 blur: 20,
                 border: 2,
@@ -413,89 +586,120 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                     Theme.of(context).colorScheme.secondary.withOpacity(0.5),
                   ],
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Place Your Bid',
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.close),
-                            onPressed: () {
-                              setState(() => _showBidPanel = false);
-                            },
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: _bidAmountController,
-                        keyboardType:
-                            TextInputType.numberWithOptions(decimal: true),
-                        decoration: InputDecoration(
-                          labelText: 'Bid Amount (\$)',
-                          hintText: 'Enter your bid',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          filled: true,
-                          fillColor: Colors.white.withOpacity(0.9),
-                          prefixIcon: const Icon(Icons.attach_money),
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Place Your Bid',
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close),
+                              onPressed: () {
+                                setState(() => _showBidPanel = false);
+                              },
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            if (_bidAmountController.text.isNotEmpty &&
-                                _selectedRideId != null) {
-                              // Submit bid
-                              final amount =
-                                  double.tryParse(_bidAmountController.text) ??
-                                      0;
-                              if (amount > 0) {
-                                // Get the driver ID from authentication
-                                // For now, we'll use a placeholder
-                                final driverId = "driver_123";
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: _bidAmountController,
+                          keyboardType:
+                              TextInputType.numberWithOptions(decimal: true),
+                          decoration: InputDecoration(
+                            labelText: 'Bid Amount (\$)',
+                            hintText: 'Enter your bid',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            filled: true,
+                            fillColor: Colors.white.withOpacity(0.9),
+                            prefixIcon: const Icon(Icons.attach_money),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              if (_bidAmountController.text.isNotEmpty &&
+                                  _selectedRideId != null) {
+                                // Submit bid
+                                final amount = double.tryParse(
+                                        _bidAmountController.text) ??
+                                    0;
+                                if (amount > 0) {
+                                  // Get the driver ID from authentication
+                                  // For now, we'll use a placeholder
+                                  final driverId = "driver_123";
 
-                                Provider.of<RideProvider>(context,
-                                        listen: false)
-                                    .placeBid(
-                                  driverId,
-                                  amount,
-                                );
+                                  try {
+                                    // Use an instance method to store the current ride ID
+                                    final rideProvider =
+                                        Provider.of<RideProvider>(context,
+                                            listen: false);
 
-                                setState(() {
-                                  _showBidPanel = false;
-                                  _bidAmountController.clear();
-                                });
+                                    // Set the current ride ID before placing a bid
+                                    if (_selectedRideId != null) {
+                                      rideProvider
+                                          .setCurrentRideId(_selectedRideId!);
+                                    }
+
+                                    rideProvider.placeBid(
+                                      driverId,
+                                      amount,
+                                    );
+
+                                    // Show success message
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                            'Bid of ₹${amount.toStringAsFixed(2)} placed successfully!'),
+                                        backgroundColor: Colors.green,
+                                      ),
+                                    );
+
+                                    setState(() {
+                                      _showBidPanel = false;
+                                      _bidAmountController.clear();
+                                    });
+                                  } catch (e) {
+                                    // Show error message
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                            'Error placing bid: ${e.toString()}'),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                }
                               }
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                Theme.of(context).colorScheme.primary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.primary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: const Text(
+                              'Submit Bid',
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
                             ),
                           ),
-                          child: const Text(
-                            'Submit Bid',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ).animate().fade().slideY(begin: 1.0),

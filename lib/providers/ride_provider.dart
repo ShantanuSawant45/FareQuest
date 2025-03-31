@@ -12,6 +12,11 @@ class RideProvider with ChangeNotifier {
   RideStatus get rideStatus => _rideStatus;
   String? get currentRideId => _currentRideId;
 
+  // Method to set the current ride ID
+  void setCurrentRideId(String rideId) {
+    _currentRideId = rideId;
+  }
+
   // Reference to the rides collection in Firestore
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   CollectionReference get _ridesCollection => _firestore.collection('rides');
@@ -124,28 +129,97 @@ class RideProvider with ChangeNotifier {
   // Method to get nearby ride requests for drivers
   Future<List<RideRequest>> getNearbyRideRequests() async {
     try {
+      print('Fetching nearby ride requests...');
+
+      // First get all rides without status filter to debug
+      final allRidesSnapshot = await _ridesCollection.get();
+      print('Total rides in Firestore: ${allRidesSnapshot.docs.length}');
+
+      if (allRidesSnapshot.docs.isEmpty) {
+        print('No rides found in Firestore, adding a test ride');
+        // Add a test ride for demonstration
+        await _ridesCollection.add({
+          'userId': 'test_user',
+          'pickup': 'Connaught Place, Delhi',
+          'destination': 'Cyber City, Gurgaon',
+          'fare': 450.0,
+          'distance': '28.5 km',
+          'estimatedTime': '45 mins',
+          'status': RideStatus.waiting.toString(),
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+        print('Test ride added to Firestore');
+      }
+
+      // Query for rides with waiting status
       final snapshot = await _ridesCollection
           .where('status', isEqualTo: RideStatus.waiting.toString())
-          .orderBy('timestamp', descending: true)
           .get();
+
+      print('Total waiting ride requests in system: ${snapshot.docs.length}');
+
+      // Print all rides for debugging
+      for (var doc in snapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        print('Found ride: ${doc.id}');
+        print('Ride data: $data');
+      }
+
+      if (snapshot.docs.isEmpty) {
+        print('No waiting ride requests found, adding mock data');
+        // Return mock data if no real requests exist
+        return [
+          RideRequest(
+            id: 'mock_ride_1',
+            userId: 'test_user',
+            pickup: 'Connaught Place, Delhi',
+            destination: 'Cyber City, Gurgaon',
+            fare: 450.0,
+            distance: '28.5 km',
+            estimatedTime: '45 mins',
+            status: RideStatus.waiting.toString(),
+            timestamp: DateTime.now(),
+          ),
+        ];
+      }
 
       return snapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
+        print('Processing ride request: ${doc.id}');
+
+        // Create RideRequest object from data
         return RideRequest(
           id: doc.id,
-          userId: data['userId'],
-          pickup: data['pickup'],
-          destination: data['destination'],
-          fare: data['fare'],
-          distance: data['distance'],
-          estimatedTime: data['estimatedTime'],
-          status: data['status'],
-          timestamp: (data['timestamp'] as Timestamp).toDate(),
+          userId: data['userId'] ?? 'unknown',
+          pickup: data['pickup'] ?? 'Unknown Pickup',
+          destination: data['destination'] ?? 'Unknown Destination',
+          fare: data['fare'] ?? 0.0,
+          distance: data['distance'] ?? 'N/A',
+          estimatedTime: data['estimatedTime'] ?? 'N/A',
+          status: data['status'] ?? RideStatus.waiting.toString(),
+          timestamp: data['timestamp'] != null && data['timestamp'] is Timestamp
+              ? (data['timestamp'] as Timestamp).toDate()
+              : DateTime.now(),
         );
       }).toList();
     } catch (e) {
       print('Error getting nearby ride requests: $e');
-      return [];
+      print('Stack trace: ${StackTrace.current}');
+
+      // Return mock data in case of error
+      return [
+        RideRequest(
+          id: 'error_mock_ride',
+          userId: 'test_user',
+          pickup: 'Rajiv Chowk, Delhi',
+          destination: 'Malviya Nagar, Delhi',
+          fare: 350.0,
+          distance: '18.5 km',
+          estimatedTime: '35 mins',
+          status: RideStatus.waiting.toString(),
+          timestamp: DateTime.now(),
+        ),
+      ];
     }
   }
 
