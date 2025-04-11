@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "939135892784",
-    "project_id": "farequest",
-    "storage_bucket": "farequest.firebasestorage.app"
+    "project_number": "398893810547",
+    "project_id": "farequest-1c71d",
+    "storage_bucket": "farequest-1c71d.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:939135892784:android:52cad3624843e4964edcf5",
+        "mobilesdk_app_id": "1:398893810547:android:48e5e546774178f4293b06",
         "android_client_info": {
           "package_name": "com.examp"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCMW5tyIOVoeY8B8e7EOgHxMxxsGzGvnOw"
+          "current_key": "AIzaSyAAfs9OHpL1wo-1W6NIyDPD68fBx8VBbY4"
         }
       ],
       "services": {

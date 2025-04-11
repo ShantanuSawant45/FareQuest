@@ -56,7 +56,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
 
   Future<void> _initializeLocationTracking() async {
     final locationProvider =
-        Provider.of<LocationProvider>(context, listen: false);
+    Provider.of<LocationProvider>(context, listen: false);
 
     await locationProvider.getCurrentLocation();
 
@@ -74,7 +74,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
 
   Future<void> _getCurrentLocation() async {
     final locationProvider =
-        Provider.of<LocationProvider>(context, listen: false);
+    Provider.of<LocationProvider>(context, listen: false);
     await locationProvider.getCurrentLocation();
 
     if (_mapController != null && locationProvider.currentLocation != null) {
@@ -248,8 +248,8 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                                 .textTheme
                                 .titleMedium
                                 ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           const SizedBox(height: 4),
                           Row(
@@ -312,7 +312,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                   heroTag: 'rideRequestsBtn',
                   onPressed: () {
                     setState(
-                        () => _showRideRequestsPanel = !_showRideRequestsPanel);
+                            () => _showRideRequestsPanel = !_showRideRequestsPanel);
                   },
                   child: Icon(
                     _showRideRequestsPanel ? Icons.close : Icons.list,
@@ -389,173 +389,173 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                       child: _isLoading
                           ? const Center(child: CircularProgressIndicator())
                           : _nearbyRideRequests.isEmpty
-                              ? Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
+                          ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.search_off,
+                              size: 48,
+                              color: Colors.grey,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No ride requests available',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              _lastRefreshTime != null
+                                  ? 'Last refreshed: ${_lastRefreshTime!.hour.toString().padLeft(2, '0')}:${_lastRefreshTime!.minute.toString().padLeft(2, '0')}'
+                                  : '',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Only showing rides from the last 10 minutes',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                  fontStyle: FontStyle.italic),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 24),
+                            ElevatedButton.icon(
+                              onPressed: _fetchNearbyRideRequests,
+                              icon: const Icon(Icons.refresh),
+                              label: const Text('Refresh'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Theme.of(context)
+                                    .colorScheme
+                                    .primary,
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                          : ListView.builder(
+                        itemCount: _nearbyRideRequests.length,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16),
+                        itemBuilder: (context, index) {
+                          final ride = _nearbyRideRequests[index];
+                          return Card(
+                            color: Colors.white.withOpacity(0.1),
+                            margin: const EdgeInsets.only(bottom: 10),
+                            elevation: 3,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: ListTile(
+                              contentPadding:
+                              const EdgeInsets.all(16),
+                              leading: CircleAvatar(
+                                backgroundColor: Theme.of(context)
+                                    .colorScheme
+                                    .primary,
+                                child: const Icon(Icons.location_on,
+                                    color: Colors.white),
+                              ),
+                              title: Text(
+                                '${ride.pickup} → ${ride.destination}',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 8),
+                                  Row(
                                     children: [
-                                      const Icon(
-                                        Icons.search_off,
-                                        size: 48,
-                                        color: Colors.grey,
-                                      ),
-                                      const SizedBox(height: 16),
-                                      Text(
-                                        'No ride requests available',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyLarge,
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        _lastRefreshTime != null
-                                            ? 'Last refreshed: ${_lastRefreshTime!.hour.toString().padLeft(2, '0')}:${_lastRefreshTime!.minute.toString().padLeft(2, '0')}'
-                                            : '',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall,
-                                      ),
-                                      const SizedBox(height: 16),
-                                      Text(
-                                        'Only showing rides from the last 10 minutes',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall
-                                            ?.copyWith(
-                                                fontStyle: FontStyle.italic),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      const SizedBox(height: 24),
-                                      ElevatedButton.icon(
-                                        onPressed: _fetchNearbyRideRequests,
-                                        icon: const Icon(Icons.refresh),
-                                        label: const Text('Refresh'),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Theme.of(context)
-                                              .colorScheme
-                                              .primary,
-                                          foregroundColor: Colors.white,
+                                      Icon(Icons.straighten,
+                                          size: 16,
+                                          color: Colors.grey[400]),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(
+                                          'Distance: ${ride.distance}',
+                                          overflow:
+                                          TextOverflow.ellipsis,
                                         ),
                                       ),
                                     ],
                                   ),
-                                )
-                              : ListView.builder(
-                                  itemCount: _nearbyRideRequests.length,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16),
-                                  itemBuilder: (context, index) {
-                                    final ride = _nearbyRideRequests[index];
-                                    return Card(
-                                      color: Colors.white.withOpacity(0.1),
-                                      margin: const EdgeInsets.only(bottom: 10),
-                                      elevation: 3,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.timer,
+                                          size: 16,
+                                          color: Colors.grey[400]),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(
+                                          'Est. Time: ${ride.estimatedTime}',
+                                          overflow:
+                                          TextOverflow.ellipsis,
+                                        ),
                                       ),
-                                      child: ListTile(
-                                        contentPadding:
-                                            const EdgeInsets.all(16),
-                                        leading: CircleAvatar(
-                                          backgroundColor: Theme.of(context)
-                                              .colorScheme
-                                              .primary,
-                                          child: const Icon(Icons.location_on,
-                                              color: Colors.white),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.currency_rupee,
+                                          size: 16,
+                                          color: Colors.grey[400]),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(
+                                          'Est. Fare: ₹${ride.fare}',
+                                          overflow:
+                                          TextOverflow.ellipsis,
                                         ),
-                                        title: Text(
-                                          '${ride.pickup} → ${ride.destination}',
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        subtitle: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            const SizedBox(height: 8),
-                                            Row(
-                                              children: [
-                                                Icon(Icons.straighten,
-                                                    size: 16,
-                                                    color: Colors.grey[400]),
-                                                const SizedBox(width: 4),
-                                                Expanded(
-                                                  child: Text(
-                                                    'Distance: ${ride.distance}',
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Row(
-                                              children: [
-                                                Icon(Icons.timer,
-                                                    size: 16,
-                                                    color: Colors.grey[400]),
-                                                const SizedBox(width: 4),
-                                                Expanded(
-                                                  child: Text(
-                                                    'Est. Time: ${ride.estimatedTime}',
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Row(
-                                              children: [
-                                                Icon(Icons.currency_rupee,
-                                                    size: 16,
-                                                    color: Colors.grey[400]),
-                                                const SizedBox(width: 4),
-                                                Expanded(
-                                                  child: Text(
-                                                    'Est. Fare: ₹${ride.fare}',
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                        trailing: SizedBox(
-                                          width: 80,
-                                          child: ElevatedButton(
-                                            onPressed: () =>
-                                                _showBidForm(ride.id),
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Theme.of(context)
-                                                  .colorScheme
-                                                  .secondary,
-                                              foregroundColor: Colors.white,
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 8,
-                                                      vertical: 10),
-                                            ),
-                                            child: const Text('Place Bid'),
-                                          ),
-                                        ),
-                                        onTap: () {
-                                          // Show pickup and destination on map
-                                          // This needs geolocation data - we'll need to enhance
-                                          // the RideRequest to include LatLng data
-                                          final locationProvider =
-                                              Provider.of<LocationProvider>(
-                                                  context,
-                                                  listen: false);
-                                          // For now we're just demonstrating - in a real app
-                                          // we would convert address to coordinates
-                                        },
                                       ),
-                                    );
-                                  },
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              trailing: SizedBox(
+                                width: 80,
+                                child: ElevatedButton(
+                                  onPressed: () =>
+                                      _showBidForm(ride.id),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Theme.of(context)
+                                        .colorScheme
+                                        .secondary,
+                                    foregroundColor: Colors.white,
+                                    padding:
+                                    const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 10),
+                                  ),
+                                  child: const Text('Place Bid'),
                                 ),
+                              ),
+                              onTap: () {
+                                // Show pickup and destination on map
+                                // This needs geolocation data - we'll need to enhance
+                                // the RideRequest to include LatLng data
+                                final locationProvider =
+                                Provider.of<LocationProvider>(
+                                    context,
+                                    listen: false);
+                                // For now we're just demonstrating - in a real app
+                                // we would convert address to coordinates
+                              },
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -611,7 +611,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                         TextField(
                           controller: _bidAmountController,
                           keyboardType:
-                              TextInputType.numberWithOptions(decimal: true),
+                          TextInputType.numberWithOptions(decimal: true),
                           decoration: InputDecoration(
                             labelText: 'Bid Amount (\$)',
                             hintText: 'Enter your bid',
@@ -632,7 +632,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                                   _selectedRideId != null) {
                                 // Submit bid
                                 final amount = double.tryParse(
-                                        _bidAmountController.text) ??
+                                    _bidAmountController.text) ??
                                     0;
                                 if (amount > 0) {
                                   // Get the driver ID from authentication
@@ -642,8 +642,8 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                                   try {
                                     // Use an instance method to store the current ride ID
                                     final rideProvider =
-                                        Provider.of<RideProvider>(context,
-                                            listen: false);
+                                    Provider.of<RideProvider>(context,
+                                        listen: false);
 
                                     // Set the current ride ID before placing a bid
                                     if (_selectedRideId != null) {
@@ -684,7 +684,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor:
-                                  Theme.of(context).colorScheme.primary,
+                              Theme.of(context).colorScheme.primary,
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(

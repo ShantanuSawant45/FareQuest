@@ -376,7 +376,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 disabledBackgroundColor: Colors.grey.shade400,
               ),
               child: const Text(
-                'Book Ride',
+                'y Ride',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ).animate().fade().slideY(begin: 0.3),

@@ -16,12 +16,11 @@ class AuthProvider with ChangeNotifier {
   String? get userId => _userId;
   bool get isDriver => _isDriver;
 
-  Future<void> signUp(String email, String password, bool isDriver,
-      BuildContext context) async {
+  Future<void> signUp(String email, String password, bool isDriver, BuildContext context) async {
     try {
       final UserCredential userCredential = await _auth
           .createUserWithEmailAndPassword(email: email, password: password);
-
+        // extracts user from usercredential and stores in the user variable
       final User? user = userCredential.user;
       if (user != null) {
         _isAuthenticated = true;
@@ -43,8 +42,9 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<void> signIn(
-      String email, String password, BuildContext context) async {
+
+// TODO: store isdriver during signin and check isdriver here for authentication
+  Future<void> signIn(String email, String password, BuildContext context) async {
     try {
       final UserCredential userCredential = await _auth
           .signInWithEmailAndPassword(email: email, password: password);

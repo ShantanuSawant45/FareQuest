@@ -21,7 +21,9 @@ class RideProvider with ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   CollectionReference get _ridesCollection => _firestore.collection('rides');
 
-  // Listen to bid updates for the current ride
+  // ye function fire base me jata hai fir ek specefic ride id me jata hai uske bids
+  // wale section me jata hai vaha ke sare bids ko ek bids object me convert karta hai
+  // aur usko currentbids me dal deta hai
   void listenForBids(String rideId) {
     _ridesCollection
         .doc(rideId)
@@ -44,8 +46,7 @@ class RideProvider with ChangeNotifier {
     });
   }
 
-  Future<void> requestRide(
-      String userId, Map<String, dynamic> rideDetails) async {
+  Future<void> requestRide(String userId, Map<String, dynamic> rideDetails) async {
     try {
       // Add timestamp and status to ride details
       final rideData = {

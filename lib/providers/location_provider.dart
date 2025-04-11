@@ -22,6 +22,8 @@ class LocationProvider with ChangeNotifier {
   Set<Polyline> get polylines => _polylines;
   bool get isLocationTracking => _isLocationTracking;
 
+  // TODO: if rhe user location is not on tell him to on the location
+
   Future<void> getCurrentLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -62,11 +64,13 @@ class LocationProvider with ChangeNotifier {
     _positionStream =
         Geolocator.getPositionStream(locationSettings: locationSettings)
             .listen((Position position) {
+
       _currentLocation = LatLng(position.latitude, position.longitude);
 
       // Update the current location marker
       _markers.removeWhere(
           (marker) => marker.markerId == const MarkerId('current_location'));
+
       _markers.add(
         Marker(
           markerId: const MarkerId('current_location'),
@@ -125,18 +129,25 @@ class LocationProvider with ChangeNotifier {
 
   // Future<void> updatePolylines() async {
   //   if (_pickupLocation != null && _destinationLocation != null) {
-  //     PolylinePoints polylinePoints = PolylinePoints();
-  //     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
-  //       'AIzaSyAdpipaTyU946lJeZjrF-oTIyAtlvDkjoY', // Use your API key
-  //       PointLatLng(_pickupLocation!.latitude, _pickupLocation!.longitude),
-  //       PointLatLng(
-  //           _destinationLocation!.latitude, _destinationLocation!.longitude), request: null!,
+  //     final polylinePoints = PolylinePoints();
+  //
+  //     // Create the request object
+  //     final request = PolylineRequest(
+  //       origin: PointLatLng(_pickupLocation!.latitude, _pickupLocation!.longitude),
+  //       destination: PointLatLng(_destinationLocation!.latitude, _destinationLocation!.longitude),
+  //       mode: TravelMode.driving, // or .walking, .bicycling, .transit
+  //       // apiKey: 'YOUR_GOOGLE_MAPS_API_KEY', // Replace with your actual API key
   //     );
+  //
+  //     final result = await polylinePoints.getRouteBetweenCoordinates(
+  //       request: request,
+  //     );
+  //
   //     _polylineCoordinates.clear();
   //     if (result.points.isNotEmpty) {
-  //       for (var point in result.points) {
-  //         _polylineCoordinates.add(LatLng(point.latitude, point.longitude));
-  //       }
+  //       _polylineCoordinates = result.points
+  //           .map((point) => LatLng(point.latitude, point.longitude))
+  //           .toList();
   //     }
   //
   //     _polylines.clear();
