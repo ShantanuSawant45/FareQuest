@@ -46,7 +46,8 @@ class RideProvider with ChangeNotifier {
     });
   }
 
-  Future<void> requestRide(String userId, Map<String, dynamic> rideDetails) async {
+  Future<void> requestRide(
+      String userId, Map<String, dynamic> rideDetails) async {
     try {
       // Add timestamp and status to ride details
       final rideData = {
@@ -249,6 +250,39 @@ class RideProvider with ChangeNotifier {
     } catch (e) {
       print('Error getting user ride history: $e');
       return [];
+    }
+  }
+
+  // Method to get ride details by ID
+  Future<RideRequest?> getRideById(String rideId) async {
+    try {
+      final docSnapshot = await _ridesCollection.doc(rideId).get();
+      if (!docSnapshot.exists) {
+        print('Ride not found: $rideId');
+        return null;
+      }
+
+      final data = docSnapshot.data() as Map<String, dynamic>;
+      print('Found ride: $rideId');
+      print('Ride data: $data');
+
+      return RideRequest(
+        id: rideId,
+        userId: data['userId'] ?? 'unknown',
+        pickup: data['pickup'] ?? 'Unknown Pickup',
+        destination: data['destination'] ?? 'Unknown Destination',
+        fare: data['fare'] ?? 0.0,
+        distance: data['distance'] ?? 'N/A',
+        estimatedTime: data['estimatedTime'] ?? 'N/A',
+        status: data['status'] ?? RideStatus.waiting.toString(),
+        timestamp: data['timestamp'] != null && data['timestamp'] is Timestamp
+            ? (data['timestamp'] as Timestamp).toDate()
+            : DateTime.now(),
+      );
+    } catch (e) {
+      print('Error getting ride by ID: $e');
+      print('Stack trace: ${StackTrace.current}');
+      return null;
     }
   }
 }

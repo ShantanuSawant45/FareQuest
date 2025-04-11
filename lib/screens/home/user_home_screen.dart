@@ -8,6 +8,7 @@ import 'package:se_project/providers/ride_provider.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'dart:math' as math;
+import 'package:se_project/screens/ride/current_ride_screen.dart';
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
@@ -471,6 +472,19 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                                   trailing: ElevatedButton(
                                     onPressed: () {
                                       rideProvider.selectBid(bid);
+
+                                      // Navigate to the CurrentRideScreen
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              CurrentRideScreen(
+                                            rideId: rideProvider.currentRideId!,
+                                            acceptedBid: bid,
+                                          ),
+                                        ),
+                                      );
+
                                       // TODO: Navigate to ride tracking screen
                                     },
                                     child: const Text('Accept'),
