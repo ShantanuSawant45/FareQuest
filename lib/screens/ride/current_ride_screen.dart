@@ -9,11 +9,15 @@ import 'package:flutter_animate/flutter_animate.dart';
 class CurrentRideScreen extends StatefulWidget {
   final String rideId;
   final Bid acceptedBid;
+  final LatLng pickupLocation;  // Add this
+  final LatLng destinationLocation;
 
   const CurrentRideScreen({
     super.key,
     required this.rideId,
     required this.acceptedBid,
+    required this.pickupLocation,  // Add this
+    required this.destinationLocation,
   });
 
   @override
@@ -66,10 +70,9 @@ class _CurrentRideScreenState extends State<CurrentRideScreen> {
 
     // For now we're using dummy coordinates until we implement geocoding
     // In a real app, convert pickup and destination addresses to coordinates
-    final pickup =
-        const LatLng(28.6304, 77.2177); // Delhi coordinates as example
-    final destination =
-        const LatLng(28.4595, 77.0266); // Gurgaon coordinates as example
+    final pickup = widget.pickupLocation;// Delhi coordinates as example
+    final destination =widget.destinationLocation;
+        // Gurgaon coordinates as example
 
     // Add pickup marker
     _markers.add(
@@ -239,7 +242,7 @@ class _CurrentRideScreenState extends State<CurrentRideScreen> {
                         // Drag handle
                         Container(
                           margin: const EdgeInsets.only(top: 8),
-                          width: 40,
+                          width: 30,
                           height: 4,
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.3),
@@ -444,7 +447,7 @@ class _CurrentRideScreenState extends State<CurrentRideScreen> {
                                       fontSize: 14,
                                     ),
                                   ),
-                                  const SizedBox(height: 4),
+                                  // const SizedBox(height: 4),
                                   Text(
                                     '₹${widget.acceptedBid.amount.toStringAsFixed(2)}',
                                     style: const TextStyle(

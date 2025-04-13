@@ -49,17 +49,14 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
-    // Apply custom map style here if needed
   }
 
   void _calculateFare(double distanceInKm) {
-    // Basic fare calculation: base fare + per km charge
-    const baseFare = 50.0; // Base fare in rupees
-    const perKmCharge = 12.0; // Per kilometer charge
+    const baseFare = 50.0;
+    const perKmCharge = 12.0;
 
     _estimatedFare = baseFare + (distanceInKm * perKmCharge);
 
-    // Estimate time (rough calculation - 2 min per km + 5 min buffer)
     final timeInMinutes = (distanceInKm * 2 + 5).round();
     if (timeInMinutes < 60) {
       _estimatedTime = "$timeInMinutes mins";
@@ -173,7 +170,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                             context,
                             listen: false);
                         locationProvider.setPickupLocation(location);
-                        // await locationProvider.updatePolylines();
                         _mapController?.animateCamera(
                           CameraUpdate.newLatLngZoom(location, 15),
                         );
@@ -218,7 +214,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                             context,
                             listen: false);
                         locationProvider.setDestinationLocation(location);
-                        // await locationProvider.updatePolylines();
 
                         _mapController?.animateCamera(
                           CameraUpdate.newCameraPosition(
@@ -229,19 +224,14 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                           ),
                         );
 
-                        // Calculate fare if both pickup and destination are set
                         if (locationProvider.pickupLocation != null &&
                             locationProvider.destinationLocation != null) {
-                          // Calculate distance between the two points
                           final double distanceInMeters =
-                              await _calculateDistance(
-                                  locationProvider.pickupLocation!,
-                                  locationProvider.destinationLocation!);
+                          await _calculateDistance(
+                              locationProvider.pickupLocation!,
+                              locationProvider.destinationLocation!);
 
-                          // Convert to kilometers
                           final distanceInKm = distanceInMeters / 1000;
-
-                          // Calculate fare
                           _calculateFare(distanceInKm);
                         }
                       },
@@ -294,8 +284,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                                 .textTheme
                                 .titleMedium
                                 ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
@@ -313,8 +303,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                                 .textTheme
                                 .titleMedium
                                 ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
@@ -332,9 +322,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                                 .textTheme
                                 .titleMedium
                                 ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
                           ),
                         ],
                       ),
@@ -352,21 +342,29 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             child: ElevatedButton(
               onPressed: _showFareDetails
                   ? () {
-                      setState(() => _showBidsPanel = true);
-                      // TODO: Implement ride request
-                      Provider.of<RideProvider>(context, listen: false)
-                          .requestRide(
-                        "user_id",
-                        {
-                          "pickup": _pickupController.text,
-                          "destination": _destinationController.text,
-                          "fare": _estimatedFare,
-                          "distance": _estimatedDistance,
-                          "estimatedTime": _estimatedTime,
-                        },
-                      );
-                    }
-                  : null, // Disable if fare details aren't shown yet
+                setState(() => _showBidsPanel = true);
+                final locationProvider = Provider.of<LocationProvider>(context, listen: false);
+                Provider.of<RideProvider>(context, listen: false)
+                    .requestRide(
+                  "user_id",
+                  {
+                    "pickup": _pickupController.text,
+                    "destination": _destinationController.text,
+                    "fare": _estimatedFare,
+                    "distance": _estimatedDistance,
+                    "estimatedTime": _estimatedTime,
+                    "pickupLatLng": {
+                      "lat": locationProvider.pickupLocation!.latitude,
+                      "lng": locationProvider.pickupLocation!.longitude,
+                    },
+                    "destinationLatLng": {
+                      "lat": locationProvider.destinationLocation!.latitude,
+                      "lng": locationProvider.destinationLocation!.longitude,
+                    },
+                  },
+                );
+              }
+                  : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Colors.white,
@@ -377,7 +375,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 disabledBackgroundColor: Colors.grey.shade400,
               ),
               child: const Text(
-                'y Ride',
+                'Request Ride',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ).animate().fade().slideY(begin: 0.3),
@@ -440,7 +438,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                                   Text(
                                     'Waiting for driver bids...',
                                     style:
-                                        Theme.of(context).textTheme.bodyLarge,
+                                    Theme.of(context).textTheme.bodyLarge,
                                   ),
                                 ],
                               ),
@@ -456,7 +454,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                                 child: ListTile(
                                   leading: CircleAvatar(
                                     backgroundColor:
-                                        Theme.of(context).colorScheme.primary,
+                                    Theme.of(context).colorScheme.primary,
                                     child: const Icon(Icons.person),
                                   ),
                                   title: Text('Driver ${bid.driverId}'),
@@ -472,20 +470,19 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                                   trailing: ElevatedButton(
                                     onPressed: () {
                                       rideProvider.selectBid(bid);
-
-                                      // Navigate to the CurrentRideScreen
+                                      final locationProvider = Provider.of<LocationProvider>(context, listen: false);
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) =>
                                               CurrentRideScreen(
-                                            rideId: rideProvider.currentRideId!,
-                                            acceptedBid: bid,
-                                          ),
+                                                rideId: rideProvider.currentRideId!,
+                                                acceptedBid: bid,
+                                                pickupLocation: locationProvider.pickupLocation!,
+                                                destinationLocation: locationProvider.destinationLocation!,
+                                              ),
                                         ),
                                       );
-
-                                      // TODO: Navigate to ride tracking screen
                                     },
                                     child: const Text('Accept'),
                                   ),
@@ -506,23 +503,19 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   }
 
   Future<double> _calculateDistance(LatLng pickup, LatLng destination) async {
-    // Simple Haversine formula to calculate distance
-    const radius = 6371.0; // Earth's radius in kilometers
+    const radius = 6371.0;
 
-    // Convert to radians
     final lat1 = pickup.latitude * (math.pi / 180);
     final lon1 = pickup.longitude * (math.pi / 180);
     final lat2 = destination.latitude * (math.pi / 180);
     final lon2 = destination.longitude * (math.pi / 180);
 
-    // Haversine formula
     final dlon = lon2 - lon1;
     final dlat = lat2 - lat1;
     final a = math.pow(math.sin(dlat / 2), 2) +
         math.cos(lat1) * math.cos(lat2) * math.pow(math.sin(dlon / 2), 2);
     final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
 
-    // Distance in meters
     return radius * c * 1000;
   }
 }
