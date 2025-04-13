@@ -11,7 +11,7 @@ import 'package:se_project/screens/splash_screen.dart';
 
 
 
-
+// this is  the main file
 
 
 // AIzaSyAdpipaTyU946lJeZjrF-oTIyAtlvDkjoY
