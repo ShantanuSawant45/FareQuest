@@ -5,13 +5,11 @@ import 'package:se_project/providers/auth_provider.dart';
 import 'package:se_project/providers/location_provider.dart';
 import 'package:se_project/providers/ride_provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:se_project/screens/home/driver_home_screen.dart';
-import 'package:se_project/screens/home/user_home_screen.dart';
 import 'package:se_project/screens/splash_screen.dart';
 
 
 
-// this is  the main file
+
 
 
 // AIzaSyAdpipaTyU946lJeZjrF-oTIyAtlvDkjoY

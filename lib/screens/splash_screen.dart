@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import 'package:se_project/providers/auth_provider.dart';
 
+import 'auth/AskuthPage.dart';
 import 'auth/login_screen.dart';
 import 'home/user_home_screen.dart';
 
@@ -32,7 +33,7 @@ class _SplashScreenState extends State<SplashScreen> {
       );
     } else {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        MaterialPageRoute(builder: (_) => const AuthChoiceScreen()),
       );
     }
   }
