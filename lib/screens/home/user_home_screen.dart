@@ -141,7 +141,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       googleAPIKey: _googleApiKey,
                       inputDecoration: InputDecoration(
                         hintText: 'Pickup Location',
-                        hintStyle: TextStyle(color: Colors.black54),
+                        hintStyle: TextStyle(color: Colors.black54,fontWeight: FontWeight.bold),
                         prefixIcon: Icon(
                           Icons.location_on,
                           color: Theme.of(context).colorScheme.primary,
@@ -183,7 +183,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       googleAPIKey: _googleApiKey,
                       inputDecoration: InputDecoration(
                         hintText: 'Destination',
-                        hintStyle: TextStyle(color: Colors.black54),
+                        hintStyle: TextStyle(color: Colors.black54,fontWeight: FontWeight.bold),
                         prefixIcon: Icon(
                           Icons.location_searching,
                           color: Theme.of(context).colorScheme.secondary,
@@ -376,7 +376,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               ),
               child: const Text(
                 'Request Ride',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold,color: Colors.black),
               ),
             ).animate().fade().slideY(begin: 0.3),
           ),
@@ -417,7 +417,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                             style: Theme.of(context).textTheme.titleLarge,
                           ),
                           IconButton(
-                            icon: const Icon(Icons.close),
+                            icon: const Icon(Icons.close,color: Colors.black,),
                             onPressed: () {
                               setState(() => _showBidsPanel = false);
                             },
@@ -437,8 +437,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                                   const SizedBox(height: 16),
                                   Text(
                                     'Waiting for driver bids...',
-                                    style:
-                                    Theme.of(context).textTheme.bodyLarge,
+                                    style:TextStyle(color: Colors.black54,fontWeight: FontWeight.bold)
+
                                   ),
                                 ],
                               ),
