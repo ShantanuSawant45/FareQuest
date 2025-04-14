@@ -429,11 +429,11 @@ class _CurrentRideScreenState extends State<CurrentRideScreen> {
                           ),
                         ),
 
-                        const SizedBox(height: 16),
+                        // const SizedBox(height: 16),
 
                         // Ride payment info
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 1.0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [

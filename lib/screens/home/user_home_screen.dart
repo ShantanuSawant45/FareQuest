@@ -276,7 +276,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                         children: [
                           Text(
                             'Distance:',
-                            style: Theme.of(context).textTheme.titleMedium,
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              color: Colors.black, // Changed to black
+                            ),
                           ),
                           Text(
                             _estimatedDistance,
@@ -285,6 +287,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                                 .titleMedium
                                 ?.copyWith(
                               fontWeight: FontWeight.bold,
+                              color: Colors.black54
                             ),
                           ),
                         ],
@@ -295,7 +298,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                         children: [
                           Text(
                             'Estimated Time:',
-                            style: Theme.of(context).textTheme.titleMedium,
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              color: Colors.black, // Changed to black
+                            ),
                           ),
                           Text(
                             _estimatedTime,
@@ -304,6 +309,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                                 .titleMedium
                                 ?.copyWith(
                               fontWeight: FontWeight.bold,
+                              color: Colors.black54
                             ),
                           ),
                         ],
@@ -314,7 +320,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                         children: [
                           Text(
                             'Estimated Fare:',
-                            style: Theme.of(context).textTheme.titleMedium,
+                            style: TextStyle(
+                              color: Colors.black, // Changed to black
+                            ),
                           ),
                           Text(
                             '₹${_estimatedFare.toStringAsFixed(2)}',
@@ -376,7 +384,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               ),
               child: const Text(
                 'Request Ride',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold,color: Colors.black),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold,color: Colors.black54),
               ),
             ).animate().fade().slideY(begin: 0.3),
           ),
