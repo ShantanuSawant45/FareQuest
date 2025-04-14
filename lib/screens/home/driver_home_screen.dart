@@ -598,6 +598,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                             Text(
                               'Place Your Bid',
                               style: Theme.of(context).textTheme.titleLarge,
+
                             ),
                             IconButton(
                               icon: const Icon(Icons.close),
@@ -609,18 +610,21 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                         ),
                         const SizedBox(height: 16),
                         TextField(
+                          style: TextStyle(color: Colors.black),
                           controller: _bidAmountController,
                           keyboardType:
                           TextInputType.numberWithOptions(decimal: true),
                           decoration: InputDecoration(
                             labelText: 'Bid Amount (\$)',
                             hintText: 'Enter your bid',
+                            hintStyle: TextStyle(color: Colors.black),
+
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                             filled: true,
                             fillColor: Colors.white.withOpacity(0.9),
-                            prefixIcon: const Icon(Icons.attach_money),
+                            prefixIcon: const Icon(Icons.attach_money,color: Colors.black,),
                           ),
                         ),
                         const SizedBox(height: 16),
