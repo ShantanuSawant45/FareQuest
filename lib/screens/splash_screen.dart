@@ -57,7 +57,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 .scale(delay: const Duration(milliseconds: 300)),
             const SizedBox(height: 20),
             Text(
-              'Neo Rides',
+              'FareQuest',
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                     color: Theme.of(context).colorScheme.primary,
                     fontWeight: FontWeight.bold,

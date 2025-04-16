@@ -467,7 +467,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                                   ),
                                   title: Text('Driver ${bid.driverId}'),
                                   subtitle: Text(
-                                    'Bid: \$${bid.amount.toStringAsFixed(2)}',
+                                    'Bid: \₹${bid.amount.toStringAsFixed(2)}',
                                     style: TextStyle(
                                       color: Theme.of(context)
                                           .colorScheme

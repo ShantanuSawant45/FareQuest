@@ -249,6 +249,8 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                                 .titleMedium
                                 ?.copyWith(
                               fontWeight: FontWeight.bold,
+                              color: Colors.black54,
+
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -265,7 +267,15 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                               const SizedBox(width: 6),
                               Text(
                                 'Online',
-                                style: Theme.of(context).textTheme.bodyMedium,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black54,
+
+                                ),
+
                               ),
                             ],
                           ),
@@ -465,6 +475,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                               title: Text(
                                 '${ride.pickup} → ${ride.destination}',
                                 style: const TextStyle(
+                                  color: Colors.black54,
                                     fontWeight: FontWeight.bold),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
@@ -485,6 +496,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                                           'Distance: ${ride.distance}',
                                           overflow:
                                           TextOverflow.ellipsis,
+                                          style: TextStyle(color: Colors.black54,fontWeight: FontWeight.bold),
                                         ),
                                       ),
                                     ],
@@ -498,6 +510,8 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                                       const SizedBox(width: 4),
                                       Expanded(
                                         child: Text(
+                                          style: TextStyle(color: Colors.black54,fontWeight: FontWeight.bold),
+
                                           'Est. Time: ${ride.estimatedTime}',
                                           overflow:
                                           TextOverflow.ellipsis,
@@ -514,6 +528,8 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                                       const SizedBox(width: 4),
                                       Expanded(
                                         child: Text(
+                                          style: TextStyle(color: Colors.black54,fontWeight: FontWeight.bold),
+
                                           'Est. Fare: ₹${ride.fare}',
                                           overflow:
                                           TextOverflow.ellipsis,

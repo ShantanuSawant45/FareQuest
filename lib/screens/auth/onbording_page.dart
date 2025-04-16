@@ -17,7 +17,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<OnboardingPage> _pages = [
     OnboardingPage(
-      title: 'Welcome to Neo Rides',
+      title: 'Welcome to FareQuest',
       description: 'Experience our unique driver bidding system - select from drivers competing to offer you the best ride deal',
       icon: Icons.electric_car,
     ),
@@ -251,7 +251,7 @@ class OnboardingPageWidget extends StatelessWidget {
               .scale(delay: const Duration(milliseconds: 200)),
           const SizedBox(height: 16),
           Text(
-            'Neo Rides',
+            'FareQuest',
             style: Theme.of(context).textTheme.headlineLarge?.copyWith(
               color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold,
